@@ -6,7 +6,7 @@ import dotenv from "dotenv";
 
 import productRoutes from "./routes/productRoutes.js";
 import { sql } from "./config/db.js";
-
+import { aj } from "./lib/arcjet.js";
 dotenv.config();
 
 const app = express();
@@ -19,9 +19,9 @@ app.use(morgan("dev")); // log the requests
 
 // apply arcjet rate-limit to all routes
 
-app.use((req, res, next) => {
+app.use(async (req, res, next) => {
   try {
-    const decision = await aj.project(req, {
+    const decision = await aj.protect(req, {
       requested:1 // specifies that each request consumes 1 token
     })
     if (decision.isDenied()) {
@@ -35,7 +35,7 @@ app.use((req, res, next) => {
       return
     }
     // check for spoofed bots
-    if (decision.results.some((result) => result.reason.isBot() && result.reason.isSoofed())) {
+    if (decision.results.some((result) => result.reason.isBot() && result.reason.isSpoofed())) {
       res.status(403).json({ error: "Spoofed bot detected"})
       return
     }
@@ -43,7 +43,7 @@ app.use((req, res, next) => {
   } catch (error) {
     console.error("Error in Arcjet middleware:", error);
     next(error)
-  }
+  }})
 app.use("/api/products", productRoutes);
 
 async function initDB() {
