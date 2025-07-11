@@ -1,4 +1,5 @@
-import { EditIcon, Link, Trash2Icon } from "lucide-react";
+import { EditIcon, Trash2Icon } from "lucide-react";
+import { Link } from 'react-router-dom';
 import React from "react";
 import { useProductStore } from "../store/useProductStore";
 
